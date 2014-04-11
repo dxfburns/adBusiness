@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <boost/asio.hpp>
+#include "include/log.h"
 #include "include/model.h"
 #include "include/database.h"
 #include "include/socket.h"
@@ -160,7 +161,10 @@ void reset_socket_connection_in_db() {
 }
 
 int main() {
+	InitLogger(true);
+	LOG_INFO("First log test");
 	reset_socket_connection_in_db();
+	LOG_INFO("socket connections were cleared.");
 	//mem_address_test();
 	//process_json();
 	//size_of_container();
