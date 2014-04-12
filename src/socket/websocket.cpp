@@ -100,8 +100,8 @@ extern boost::function<void(const string&)> func_disconnect_client;
 
 void adbiz::websocket::run_wspp_server() {
 	try {
-		wspp_server* server_client = new wspp_server_client;
-		wspp_server* server_waiter = new wspp_server_waiter;
+		shared_ptr<wspp_server> server_client(new wspp_server_client);
+		shared_ptr<wspp_server> server_waiter(new wspp_server_waiter);
 
 		func_send_to_client = boost::bind(&wspp_server::send_message, server_client, ::_1, ::_2);
 		func_send_to_waiter = boost::bind(&wspp_server::send_message, server_waiter, ::_1, ::_2);
@@ -112,9 +112,6 @@ void adbiz::websocket::run_wspp_server() {
 		thread t3(bind(&wspp_server::process_messages, server_waiter));
 		server_client->run(6688);
 		t1.join();
-
-		delete server_client;
-		delete server_waiter;
 	} catch (std::exception & e) {
 		cout << e.what() << endl;
 	}
