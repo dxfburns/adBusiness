@@ -161,7 +161,7 @@ void reset_socket_connection_in_db() {
 }
 
 int main() {
-	InitLogger(true);
+	adbiz::utility::InitLogger(true);
 	LOG_INFO("First log test");
 	reset_socket_connection_in_db();
 	LOG_INFO("socket connections were cleared.");
