@@ -27,6 +27,7 @@ namespace adbiz {
 			typedef map<string, vector<int> > client_conn_map;
 			con_map m_connections;
 			client_conn_map m_client_connections;
+			connection_manager() {};
 		public:
 			static connection_manager* get_client_instance() {
 				if (p_client_instance == 0) {

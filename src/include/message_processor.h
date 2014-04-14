@@ -39,6 +39,7 @@ namespace adbiz {
 		class message_processor_client: public message_processor {
 		private:
 			static message_processor_client* p_instance;
+			message_processor_client() { p_conn_mgr = connection_manager::get_client_instance();}
 		public:
 			static message_processor_client* get_instance() {
 				if (p_instance == 0) {
@@ -48,18 +49,12 @@ namespace adbiz {
 
 				return p_instance;
 			}
-			message_processor_client() { p_conn_mgr = connection_manager::get_client_instance();}
-//			void init_connection(connection_hdl&);
-//			void update_connection(int, string&, int);
-//			void remove_connection(string&);
-//			void remove_connection(connection_hdl&);
-//			vector<connection_hdl> get_connections(const string&);
-//			void message_dispacher(connection_hdl&, const string&);
 		};
 
 		class message_processor_waiter: public message_processor {
 		private:
 			static message_processor_waiter* p_instance;
+			message_processor_waiter() { p_conn_mgr = connection_manager::get_waiter_instance();}
 		public:
 			static message_processor_waiter* get_instance() {
 				if (p_instance == 0) {
@@ -69,7 +64,6 @@ namespace adbiz {
 
 				return p_instance;
 			}
-			message_processor_waiter() { p_conn_mgr = connection_manager::get_waiter_instance();}
 		};
 	}
 }

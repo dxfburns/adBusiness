@@ -25,20 +25,17 @@ void adbiz::business::connection_manager::add_connection(conn_m& cm, const conne
 void adbiz::business::connection_manager::update_connection(conn_m& cm) {
 	bool has_addr = false;
 
-	client_conn_map::iterator iter = m_client_connections.find(cm.client_id);
-	if (iter == m_client_connections.end()) {
+	if (m_client_connections.count(cm.client_id) == 0) {
 		vector<int> v;
 		v.push_back(cm.conn_address);
-
-		m_client_connections.insert(make_pair<string, vector<int> >(cm.client_id, v));
+		m_client_connections[cm.client_id] = v;
 	} else {
-		vector<int> v(m_client_connections[cm.client_id]);
-		vector<int>::iterator it = std::find(v.begin(),v.end(), cm.conn_address);
-		has_addr = (it != v.end());
+		vector<int>& v = m_client_connections[cm.client_id];
+		int num = std::count(v.begin(), v.end(), cm.conn_address);
+		has_addr = (num > 0);
 
 		if (!has_addr) {
 			v.push_back(cm.conn_address);
-			m_client_connections[cm.client_id] = v;
 		}
 	}
 
@@ -60,19 +57,13 @@ void adbiz::business::connection_manager::remove_connection(const connection_hdl
 		dbcm.remove_connection_by_address(conn_addr);
 	}
 
-	client_conn_map::iterator iter = m_client_connections.find(cm.client_id);
-	if (iter != m_client_connections.end()) {
-		vector<int>::iterator it;
-		for (it = m_client_connections[cm.client_id].begin(); it != m_client_connections[cm.client_id].end(); it++) {
-			if (*it == conn_addr) {
-				if (m_client_connections[cm.client_id].size() > 1) {
-					m_client_connections[cm.client_id].erase(it);
-				} else {
-					m_client_connections.erase(cm.client_id);
-				}
-
-				break;
-			}
+	if (m_client_connections.count(cm.client_id) > 0) {
+		vector<int>& v = m_client_connections[cm.client_id];
+		if (v.size() > 1) {
+			vector<int>::iterator end = std::remove(v.begin(), v.end(), conn_addr);
+			v.erase(end, v.end());
+		} else {
+			m_client_connections.erase(cm.client_id);
 		}
 	}
 }
