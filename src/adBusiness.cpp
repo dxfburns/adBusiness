@@ -26,9 +26,11 @@ void reset_socket_connection_in_db() {
 }
 
 void test_reflection();
+void test_redis();
 
 int main() {
-	test_reflection();
+	test_redis();
+	//test_reflection();
 	adbiz::utility::InitLogger(true);
 	LOG_INFO("First log test");
 	reset_socket_connection_in_db();
