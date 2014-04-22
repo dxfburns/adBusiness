@@ -5,9 +5,6 @@
  *      Author: root
  */
 #include <iostream>
-#include <mysql_connection.h>
-#include <mysql_driver.h>
-#include <prepared_statement.h>
 #include <boost/format.hpp>
 #include "../include/model.h"
 #include "../include/database.h"
