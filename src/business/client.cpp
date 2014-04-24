@@ -10,11 +10,13 @@
 #include "../include/database.h"
 #include "../include/business.h"
 #include "../include/utility.h"
+#include "../include/cache.h"
 
 using namespace std;
 using namespace adbiz::model;
 using namespace adbiz::db::manage;
 using namespace adbiz::utility;
+using namespace adbiz::cache;
 
 bool adbiz::business::client::init(string& client_id, string& alias, string& track_path, string& ip, string& ip_position, string& ip_description,
 		string& user_agent) {
@@ -31,8 +33,13 @@ bool adbiz::business::client::init(string& client_id, string& alias, string& tra
 	clt.ip_description = ip_description;
 	clt.user_agent = user_agent;
 
+	cache_manager::set_client(clt);
+
 	db_client dbc;
 	bool res = dbc.add_client(clt);
+
+	adbiz::model::client c;
+	cache_manager::get_client(clt.client_id, c);
 
 	return res;
 }

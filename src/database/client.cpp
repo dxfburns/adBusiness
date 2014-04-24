@@ -39,7 +39,7 @@ client* adbiz::db::manage::db_client::get_client(const string& client_id){
 bool adbiz::db::manage::db_client::add_client(const client& clt) {
 	boost::format fmt("insert into client (client_id, alias, last_waiter, first_time, last_time, session_count, "
 				"visit_count, track_path, ip, ip_position, ip_description, url, title, user_agent) values "
-				"(%1%, %2%, '', %3%, %4%, 1, 1, '', %5%, %6%, %7%, '', '', %8%)");
+				"('%1%', '%2%', '', %3%, %4%, 1, 1, '', '%5%', '%6%', '%7%', '', '', '%8%')");
 	fmt %clt.client_id %clt.alias %clt.first_time %clt.last_time %clt.ip %clt.ip_position %clt.ip_description %clt.user_agent;
 	mysql_handler handler;
 	return handler.execute(fmt.str().data());

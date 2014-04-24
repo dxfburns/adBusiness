@@ -56,6 +56,11 @@ namespace adbiz {
 			client_disconnect = 5
 		} msg_t;
 
+		enum cache_type {
+			mem_local = 0,
+			mem_redis = 1
+		};
+
 		struct package {
 			string from;
 			string to;
