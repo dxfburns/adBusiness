@@ -28,8 +28,6 @@ public:
 	}
 };
 
-map<char*, shared_ptr<Class> > adbiz::utility::Class::class_map;
-
 void test_reflection() {
 	Class::regist<MyClass>("MyClass");
 	Class::regist<MyClass2>("MyClass2");

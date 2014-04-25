@@ -38,9 +38,15 @@ void test_client() {
 	adbiz::business::client::init(client_id, alias, track_path, ip, ip_position, ip_description, user_agent);
 }
 
+void regist_classes();
+void read_strategy_xml();
+
 int main() {
 	//test_redis();
 	//test_reflection();
+	regist_classes();
+	read_strategy_xml();
+
 	adbiz::cache::cache_manager::set_cache_type(mem_redis);
 	test_client();
 	adbiz::utility::InitLogger(true);
