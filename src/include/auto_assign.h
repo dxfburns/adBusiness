@@ -8,63 +8,85 @@
 #ifndef AUTO_ASSIGN_H_
 #define AUTO_ASSIGN_H_
 #include <map>
-#include <boost/smart_ptr.hpp>
-#include "reflection.h"
 
 using namespace std;
-using namespace boost;
-using namespace adbiz::utility;
 
 namespace adbiz{
 	namespace business {
 		namespace auto_assign {
 			class processor_base;
+			struct context;
+
+			template<class T>
+			class processor_factory {
+			public:
+				static processor_base* create();
+			};
+
+			class my_class {
+			private:
+				string name;
+				processor_base* (*factory)(void);
+				static map<string, my_class*> class_map;
+			public:
+				template<typename T>
+				static void regist(string);
+				static my_class* for_name(string);
+				processor_base* new_instance();
+				string get_name() const;
+			};
 
 			class anylizer {
 			private:
-				shared_ptr<processor_base> processor;
+				processor_base* processor;
 			public:
-				void set_context(map<string, long>&);
+				anylizer(processor_base*);
+				void set_context(context*);
 				void execute();
 			};
 
 			class processor_base {
 			public:
-				map<string, long> context;
+				context* p_cxt;
 				virtual ~processor_base() {}
 				virtual void execute() = 0;
 			};
 
-			class processor_last_waiter : public processor_base, public Object {
+			class processor_last_waiter : public processor_base {
 			public:
 				void execute();
 			};
 
-			class processor_capcity: public processor_base, public Object {
+			class processor_capcity: public processor_base {
 			public:
 				void execute();
 			};
 
-			class processor_policy_zone: public processor_base, public Object {
+			class processor_policy_zone: public processor_base {
 			public:
 				void execute();
 			};
 
-			class processor_policy_page: public processor_base, public Object {
+			class processor_policy_page: public processor_base {
 			public:
 				void execute();
 			};
 
-			class processor_final: public processor_base, public Object {
+			class processor_final: public processor_base {
 			public:
 				void execute();
 			};
 
-			struct context_key {
-				static const string can_next;
-				static const string last_waiter;
-				static const string candidates;
-				static const string final_assigner;
+			struct context {
+				bool can_next;
+				string last_waiter;
+				vector<string> candidates;
+				string final_assigner;
+			};
+
+			class anylizer_processor {
+			public:
+				static void execute_client();
 			};
 		}
 	}

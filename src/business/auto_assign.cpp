@@ -7,30 +7,62 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <boost/smart_ptr.hpp>
 #include <boost/typeof/typeof.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include <boost/assign.hpp>
 #include "../include/auto_assign.h"
-#include "../include/utility.h"
 
+using namespace boost;
+using namespace boost::assign;
+using namespace boost::property_tree;
 using namespace adbiz::business::auto_assign;
-using namespace adbiz::utility;
+
+template<typename T>
+processor_base* processor_factory<T>::create() {
+	return new T;
+}
+
+map<string, my_class*> my_class::class_map;
+
+template<typename T>
+void my_class::regist(string class_name) {
+	if (class_map.count(class_name.c_str()) == 0) {
+		my_class* cls = new my_class;
+		cls->factory = &processor_factory<T>::create;
+		cls->name = class_name;
+		class_map[class_name] = cls;
+	}
+}
+
+processor_base* my_class::new_instance() {
+	return this->factory();
+}
+
+my_class* my_class::for_name(string class_name) {
+	if (class_map.count(class_name) != 0) {
+		return class_map[class_name];
+	}
+
+	return 0;
+}
+
+string my_class::get_name() const {
+	return name;
+}
 
 void regist_classes() {
-	Class::regist<processor_last_waiter>("adbiz::business::auto_assign::processor_last_waiter");
-	Class::regist<processor_capcity>("adbiz::business::auto_assign::processor_capcity");
-	Class::regist<processor_policy_zone>("adbiz::business::auto_assign::processor_policy_zone");
-	Class::regist<processor_policy_page>("adbiz::business::auto_assign::processor_policy_page");
-	Class::regist<processor_final>("adbiz::business::auto_assign::processor_final");
+	my_class::regist<processor_last_waiter>("adbiz::business::auto_assign::processor_last_waiter");
+	my_class::regist<processor_capcity>("adbiz::business::auto_assign::processor_capcity");
+	my_class::regist<processor_policy_zone>("adbiz::business::auto_assign::processor_policy_zone");
+	my_class::regist<processor_policy_page>("adbiz::business::auto_assign::processor_policy_page");
+	my_class::regist<processor_final>("adbiz::business::auto_assign::processor_final");
 }
 
 static vector<string> client_class;
 
-#include <boost/assign.hpp>
 void read_strategy_xml() {
-	using namespace boost::property_tree;
-	using namespace boost::assign;
-
 	ptree pt;
 	read_xml("strategy.xml", pt);
 
@@ -40,8 +72,12 @@ void read_strategy_xml() {
 	}
 }
 
-void anylizer::set_context(map<string, long>& context) {
-	processor->context = context;
+anylizer::anylizer(processor_base* p_base) {
+	this->processor = p_base;
+}
+
+void anylizer::set_context(context* p_cxt) {
+	processor->p_cxt = p_cxt;
 }
 
 void anylizer::execute() {
@@ -50,89 +86,59 @@ void anylizer::execute() {
 
 void processor_last_waiter::execute() {
 	string last_waiter = "12345_10957";
-	this->context[context_key::last_waiter] = (long) &last_waiter;
-	bool can_next = true;
-	this->context[context_key::can_next] = (long) &can_next;
+	p_cxt->last_waiter = last_waiter;
 }
 
 void processor_capcity::execute() {
-	bool* p_can_next = (bool*) this->context[context_key::can_next];
-	if (!*p_can_next) {
-		bool can_next = false;
-		this->context[context_key::can_next] = (long) &can_next;
-
-		return;
-	}
-
-	vector<string> v;
-	v.push_back("12345_10957");
-	v.push_back("12346_10957");
-	v.push_back("12347_10957");
-	this->context[context_key::candidates] = (long) &v;
-
-	bool can_next = true;
-	this->context[context_key::can_next] = (long) &can_next;
+	p_cxt->candidates += "12345_10957";
+	p_cxt->candidates += "12346_10957";
+	p_cxt->candidates += "12347_10957";
+	p_cxt->candidates += "12348_10957";
+	p_cxt->candidates += "12349_10957";
 }
 
 void processor_policy_zone::execute() {
-	bool* p_can_next = (bool*) this->context[context_key::can_next];
-	if (!*p_can_next) {
-		bool can_next = false;
-		this->context[context_key::can_next] = (long) &can_next;
+	vector<string>::iterator end = remove(p_cxt->candidates.begin(), p_cxt->candidates.end(), "12345_10957");
+	p_cxt->candidates.erase(end, p_cxt->candidates.end());
 
-		return;
+	if (p_cxt->candidates.size() == 0) {
+		p_cxt->can_next = false;
 	}
-
-	vector<string>* p_v = (vector<string>*) this->context[context_key::candidates];
-	vector<string>::iterator new_end = remove(p_v->begin(), p_v->end(), "12345_10957");
-	p_v->erase(new_end, p_v->end());
-
-	this->context[context_key::candidates] = (long) p_v;
-	bool can_next = true;
-	this->context[context_key::can_next] = (long) &can_next;
 }
 
 void processor_policy_page::execute() {
-	bool* p_can_next = (bool*) this->context[context_key::can_next];
-	if (!*p_can_next) {
-		bool can_next = false;
-		this->context[context_key::can_next] = (long) &can_next;
+	vector<string>::iterator end = remove(p_cxt->candidates.begin(), p_cxt->candidates.end(), "12346_10957");
+	p_cxt->candidates.erase(end, p_cxt->candidates.end());
 
-		return;
+	if (p_cxt->candidates.size() == 0) {
+		p_cxt->can_next = false;
 	}
-
-	vector<string>* p_v = (vector<string>*) this->context[context_key::candidates];
-	vector<string>::iterator new_end = remove(p_v->begin(), p_v->end(), "12346_10957");
-	p_v->erase(new_end, p_v->end());
-
-	this->context[context_key::candidates] = (long) p_v;
-	bool can_next = true;
-	this->context[context_key::can_next] = (long) &can_next;
 }
 
+#include <stdlib.h>
 void processor_final::execute() {
-	bool* p_can_next = (bool*) this->context[context_key::can_next];
-	if (!*p_can_next) {
-		bool can_next = false;
-		this->context[context_key::can_next] = (long) &can_next;
-
-		return;
-	}
-
-	string final_assigner;
-	vector<string>* p_v = (vector<string>*) this->context[context_key::candidates];
-	vector<string>::iterator iter;
-	for (iter = p_v->begin(); iter != p_v->end(); iter++) {
-		final_assigner = *iter;
-	}
-
-	this->context[context_key::final_assigner] = (long) &final_assigner;
-	bool can_next = false;
-	this->context[context_key::can_next] = (long) &can_next;
+	std::srand((int) time(0));
+	double count = p_cxt->candidates.size() * 1.0;
+	int index = (int) (count * rand() / RAND_MAX);
+	p_cxt->final_assigner = p_cxt->candidates[index];
 }
 
-const string context_key::can_next = "CAN_NEXT";
-const string context_key::last_waiter = "LAST_WAITER";
-const string context_key::candidates = "CANDIDATES";
-const string context_key::final_assigner = "FINAL_ASSIGNER";
+void anylizer_processor::execute_client() {
+	shared_ptr<context> sp_cxt(new context);
+	sp_cxt->can_next = true;
 
+	for (BOOST_AUTO(iter, client_class.begin()); iter != client_class.end(); iter++) {
+		cout << *iter << endl;
+		shared_ptr<my_class> sp_mc(my_class::for_name(*iter));
+		shared_ptr<processor_base> sp_pb(sp_mc->new_instance());
+		anylizer alz(sp_pb.get());
+		alz.set_context(sp_cxt.get());
+		alz.execute();
+
+		if (!sp_cxt->can_next) {
+			break;
+		}
+	}
+
+	cout << sp_cxt->final_assigner << endl;
+}

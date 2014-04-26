@@ -14,6 +14,7 @@
 #include "include/socket.h"
 #include "include/websocket.h"
 #include "include/cache.h"
+#include "include/auto_assign.h"
 
 using namespace std;
 using namespace boost::asio;
@@ -21,6 +22,7 @@ using namespace adbiz::model;
 using namespace adbiz::db::manage;
 using namespace adbiz::socket;
 using namespace adbiz::websocket;
+using namespace adbiz::business::auto_assign;
 
 void reset_socket_connection_in_db() {
 	adbiz::db::manage::db_connection_manager::db_connection_manager().remove_connection_by_machineid(MACHINE_ID);
@@ -46,13 +48,14 @@ int main() {
 	//test_reflection();
 	regist_classes();
 	read_strategy_xml();
+	anylizer_processor::execute_client();
 
-	adbiz::cache::cache_manager::set_cache_type(mem_redis);
-	test_client();
-	adbiz::utility::InitLogger(true);
-	LOG_INFO("First log test");
-	reset_socket_connection_in_db();
-	LOG_INFO("socket connections were cleared.");
+//	adbiz::cache::cache_manager::set_cache_type(mem_redis);
+//	test_client();
+//	adbiz::utility::InitLogger(true);
+//	LOG_INFO("First log test");
+//	reset_socket_connection_in_db();
+//	LOG_INFO("socket connections were cleared.");
 
-	run_wspp_server();
+//	run_wspp_server();
 }
