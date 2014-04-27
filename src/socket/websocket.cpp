@@ -78,7 +78,7 @@ void adbiz::websocket::wspp_server::send_message(const string& to, const string&
 void adbiz::websocket::wspp_server::disconnect_client(const string& client_id) {
 	vector<connection_hdl> hdls = p_mp->get_connections(client_id);
 	for (vector<connection_hdl>::iterator iter = hdls.begin(); iter != hdls.end(); iter++) {
-		m_server.close(*iter, 1000, "Server closed.");
+		m_server.close(*iter, websocketpp::close::status::going_away, "Server closed.");
 	}
 
 // if need check, should uncomment the code below

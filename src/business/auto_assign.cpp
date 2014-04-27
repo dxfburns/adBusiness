@@ -123,7 +123,11 @@ void processor_final::execute() {
 	p_cxt->final_assigner = p_cxt->candidates[index];
 }
 
+#include <boost/thread.hpp>
 void anylizer_processor::execute_client() {
+	mutex io_mu;
+	mutex::scoped_lock lock(io_mu);
+
 	shared_ptr<context> sp_cxt(new context);
 	sp_cxt->can_next = true;
 
@@ -141,4 +145,6 @@ void anylizer_processor::execute_client() {
 	}
 
 	cout << sp_cxt->final_assigner << endl;
+
+	lock.unlock();
 }

@@ -46,16 +46,16 @@ void read_strategy_xml();
 int main() {
 	//test_redis();
 	//test_reflection();
-	regist_classes();
-	read_strategy_xml();
-	anylizer_processor::execute_client();
+//	regist_classes();
+//	read_strategy_xml();
+//	anylizer_processor::execute_client();
 
 //	adbiz::cache::cache_manager::set_cache_type(mem_redis);
 //	test_client();
 //	adbiz::utility::InitLogger(true);
 //	LOG_INFO("First log test");
-//	reset_socket_connection_in_db();
+	reset_socket_connection_in_db();
 //	LOG_INFO("socket connections were cleared.");
 
-//	run_wspp_server();
+	run_wspp_server();
 }
