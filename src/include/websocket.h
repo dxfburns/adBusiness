@@ -60,7 +60,8 @@ namespace adbiz {
 			condition_variable m_action_cond;
 		public:
 			wspp_server();
-			virtual ~wspp_server() {}
+			virtual ~wspp_server() {
+			}
 			virtual void run(uint16_t);
 			virtual void on_open(connection_hdl&);
 			virtual void on_close(connection_hdl&);
@@ -72,14 +73,24 @@ namespace adbiz {
 			message_processor* p_mp;
 		};
 
-		class wspp_server_client : public wspp_server {
+		class wspp_server_client: public wspp_server {
 		public:
 			wspp_server_client();
 		};
 
-		class wspp_server_waiter : public wspp_server {
+		class wspp_server_waiter: public wspp_server {
 		public:
 			wspp_server_waiter();
+		};
+
+		class wspp_server_dispatcher: public wspp_server {
+		public:
+			wspp_server_dispatcher();
+//			void run(uint16_t);
+			void on_open(connection_hdl&);
+			void on_close(connection_hdl&);
+			void on_message(connection_hdl&, server::message_ptr&);
+			void send_message(const string&, const string&);
 		};
 
 		void run_wspp_server();

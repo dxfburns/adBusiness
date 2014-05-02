@@ -4,15 +4,18 @@
  *  Created on: Apr 4, 2014
  *      Author: root
  */
-
+#include "../include/cache.h"
 #include "../include/database.h"
 #include "../include/connection_manager.h"
 #include <algorithm>
+#include <boost/lexical_cast.hpp>
 
+using namespace adbiz::cache;
 using namespace adbiz::db::manage;
 
 adbiz::business::connection_manager* adbiz::business::connection_manager::p_client_instance = 0;
 adbiz::business::connection_manager* adbiz::business::connection_manager::p_waiter_instance = 0;
+adbiz::business::connection_manager* adbiz::business::connection_manager::p_dispatcher_instance = 0;
 
 void adbiz::business::connection_manager::add_connection(conn_m& cm, const connection_hdl& hdl) {
 	const int conn_addr = (int) hdl.lock().get();
@@ -42,6 +45,8 @@ void adbiz::business::connection_manager::update_connection(conn_m& cm) {
 	if (!has_addr) {
 		db_connection_manager dbcm;
 		dbcm.update_connection(cm);
+
+		cache_manager::set_conn_mgnt(cm);
 	}
 }
 
@@ -62,8 +67,12 @@ void adbiz::business::connection_manager::remove_connection(const connection_hdl
 		if (v.size() > 1) {
 			vector<int>::iterator end = std::remove(v.begin(), v.end(), conn_addr);
 			v.erase(end, v.end());
+
+			cache_manager::remove_conn_mngt(cm.client_id, lexical_cast<string>(conn_addr));
 		} else {
 			m_client_connections.erase(cm.client_id);
+
+			cache_manager::remove_conn_mngt(cm.client_id);
 		}
 	}
 }
@@ -80,6 +89,8 @@ void adbiz::business::connection_manager::remove_connection(const string& client
 
 		db_connection_manager dbcm;
 		dbcm.remove_connection_by_clientid(client_id);
+
+		cache_manager::remove_conn_mngt(client_id);
 	}
 }
 

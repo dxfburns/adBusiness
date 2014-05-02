@@ -23,6 +23,7 @@ namespace adbiz {
 		private:
 			static connection_manager* p_client_instance;
 			static connection_manager* p_waiter_instance;
+			static connection_manager* p_dispatcher_instance;
 			typedef map<int, connection_hdl> con_map;
 			typedef map<string, vector<int> > client_conn_map;
 			con_map m_connections;
@@ -44,6 +45,14 @@ namespace adbiz {
 				}
 
 				return p_waiter_instance;
+			}
+			static connection_manager* get_dispatcher_instance() {
+				if (p_dispatcher_instance == 0) {
+					static connection_manager p3;
+					p_dispatcher_instance = &p3;
+				}
+
+				return p_dispatcher_instance;
 			}
 			void add_connection(conn_m&,const connection_hdl&);
 			void update_connection(conn_m&);

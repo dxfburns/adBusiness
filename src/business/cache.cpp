@@ -20,6 +20,18 @@ void adbiz::cache::cache_local::get_client(string& client_id, client& clt) {
 
 }
 
+void adbiz::cache::cache_local::set_conn_mgnt(conn_m& conn) {
+
+}
+
+void adbiz::cache::cache_local::remove_conn_mngt(const string& key, const string& hkey) {
+
+}
+
+void adbiz::cache::cache_local::remove_conn_mngt(const string& key) {
+
+}
+
 redis::client* redis_connect() {
 	const char* host = "localhost";
 	return new redis::client(host);
@@ -52,7 +64,7 @@ void adbiz::cache::cache_redis::get_client(string& client_id, client& clt) {
 	rc->select(0);
 
 	string key = client_id;
-	if(!rc->exists(key)) {
+	if (!rc->exists(key)) {
 		return;
 	}
 
@@ -70,6 +82,32 @@ void adbiz::cache::cache_redis::get_client(string& client_id, client& clt) {
 	clt.title = rc->hget(key, "title");
 	clt.track_path = rc->hget(key, "track_path");
 	clt.user_agent = rc->hget(key, "user_agent");
+}
+
+void adbiz::cache::cache_redis::set_conn_mgnt(conn_m& conn) {
+	shared_ptr<redis::client> rc(redis_connect());
+	rc->select(1);
+
+	string key(conn.client_id);
+	rc->hset(key, lexical_cast<string>(conn.conn_address), lexical_cast<string>(conn.machine_id));
+
+}
+
+void adbiz::cache::cache_redis::remove_conn_mngt(const string& key, const string& hkey) {
+	shared_ptr<redis::client> rc(redis_connect());
+	rc->select(1);
+
+	rc->hdel(key, hkey);
+	if(rc->hlen(key) == 0) {
+		rc->del(key);
+	}
+}
+
+void adbiz::cache::cache_redis::remove_conn_mngt(const string& key) {
+	shared_ptr<redis::client> rc(redis_connect());
+	rc->select(1);
+
+	rc->del(key);
 }
 
 shared_ptr<adbiz::cache::cache> adbiz::cache::cache_manager::ch;
@@ -93,5 +131,17 @@ void adbiz::cache::cache_manager::set_client(client& clt) {
 
 void adbiz::cache::cache_manager::get_client(string& client_id, client& clt) {
 	ch->get_client(client_id, clt);
+}
+
+void adbiz::cache::cache_manager::set_conn_mgnt(conn_m& conn) {
+	ch->set_conn_mgnt(conn);
+}
+
+void adbiz::cache::cache_manager::remove_conn_mngt(const string& key, const string& hkey) {
+	ch->remove_conn_mngt(key, hkey);
+}
+
+void adbiz::cache::cache_manager::remove_conn_mngt(const string& key) {
+	ch->remove_conn_mngt(key);
 }
 

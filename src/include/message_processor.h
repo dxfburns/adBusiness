@@ -28,6 +28,8 @@ namespace adbiz {
 			virtual ~message_processor() {}
 			void set_package_from_message(const string&, package&);
 			void set_message_from_package(package&, string&);
+			void set_dispatch_package_from_message(const string&, dispatch_package&);
+			void set_message_from_dispatch_package(dispatch_package&, string&);
 			void init_connection(connection_hdl&);
 			void update_connection(int, string&, int);
 			void remove_connection(string&);
@@ -59,6 +61,21 @@ namespace adbiz {
 			static message_processor_waiter* get_instance() {
 				if (p_instance == 0) {
 					static message_processor_waiter p;
+					p_instance = &p;
+				}
+
+				return p_instance;
+			}
+		};
+
+		class message_processor_dispatcher: public message_processor {
+		private:
+			static message_processor_dispatcher* p_instance;
+			message_processor_dispatcher() { p_conn_mgr = connection_manager::get_dispatcher_instance();}
+		public:
+			static message_processor_dispatcher* get_instance() {
+				if (p_instance == 0) {
+					static message_processor_dispatcher p;
 					p_instance = &p;
 				}
 

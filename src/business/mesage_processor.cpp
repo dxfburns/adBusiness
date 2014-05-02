@@ -7,10 +7,12 @@
 #include "../include/message_processor.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/algorithm/string.hpp>
 
 boost::function<void(const string&, const string&)> func_send_to_client;
 boost::function<void(const string&, const string&)> func_send_to_waiter;
 boost::function<void(const string&)> func_disconnect_client;
+boost::function<void(const string&, const string&)> func_send_to_dispatcher;
 
 namespace adbiz {
 	namespace business {
@@ -19,6 +21,7 @@ namespace adbiz {
 
 		message_processor_client* message_processor_client::p_instance = 0;
 		message_processor_waiter* message_processor_waiter::p_instance = 0;
+		message_processor_dispatcher* message_processor_dispatcher::p_instance = 0;
 
 		void message_processor::set_package_from_message(const string& msg, package& pack) {
 			ptree pt, pt1;
@@ -71,6 +74,81 @@ namespace adbiz {
 			msg = os.str();
 		}
 
+		void message_processor::set_dispatch_package_from_message(const string& msg, dispatch_package& dis_pack) {
+			ptree pt;
+			stringstream stream;
+
+			stream << msg;
+			read_json(stream, pt);
+
+			string str_to = pt.get<string>("to");
+			vector<string> v_to;
+			boost::split(v_to, str_to, boost::is_any_of(";"));
+
+			//string str_msg = pt.get<string>("msg");
+			package pack;
+			//set_package_from_message(str_msg, pack);
+			pack.from = pt.get<string>("msg.from");
+			pack.to = pt.get<string>("msg.to");
+			pack.site_id = atoi(pt.get < string > ("msg.site_id").c_str());
+			pack.session_id = atoi(pt.get < string > ("msg.session_id").c_str());
+			pack.message_type = (msg_t) (atoi(pt.get < string > ("msg.message_type").c_str()));
+			ptree pt1 = pt.get_child("msg.messages");
+			queue<message> q;
+			for (ptree::iterator iter = pt1.begin(); iter != pt1.end(); iter++) {
+				ptree pt2 = iter->second;
+				message m;
+				m.text = pt2.get < string > ("text");
+				m.time = atol(pt2.get < string > ("time").c_str());
+
+				q.push(m);
+			}
+			pack.messages = q;
+
+			dis_pack.to = v_to;
+			dis_pack.msg = pack;
+		}
+
+		void message_processor::set_message_from_dispatch_package(dispatch_package& dis_pack, string& msg) {
+			ptree pt, pt1, pt2;
+			string str_to;
+			for (vector<string>::iterator iter = dis_pack.to.begin(); iter != dis_pack.to.end(); iter++) {
+				str_to += *iter;
+				str_to += ";";
+			}
+
+			if(str_to.size() == 0) {
+				return;
+			}
+			str_to = str_to.substr(0, str_to.size() - 1);
+
+			package& pack = dis_pack.msg;
+			pt1.put("from", pack.from);
+			pt1.put("to", pack.to);
+			pt1.put<int>("site_id", pack.site_id);
+			pt1.put("session_id", pack.session_id);
+			pt1.put<short>("message_type", (short) pack.message_type);
+			while (!pack.messages.empty()) {
+				message msg = pack.messages.front();
+				ptree pt3;
+				pt3.put("text", msg.text);
+				pt3.put<long>("time", msg.time);
+
+				pt2.push_back(std::make_pair("", pt3));
+
+				pack.messages.pop();
+			}
+			pt1.put_child("messages", pt2);
+
+			pt.put("to", str_to);
+			pt.put_child("msg", pt1);
+
+			ostringstream os;
+			write_json(os, pt);
+
+			msg = os.str();
+		}
+
 		void message_processor::init_connection(connection_hdl& hdl) {
 			conn_m cm;
 			cm.conn_address = (int) hdl.lock().get();
@@ -104,20 +182,32 @@ namespace adbiz {
 			this->set_package_from_message(msg, pack);
 			msg_t type(pack.message_type);
 
+			//event listener
 			switch (type) {
 			case waiter_to_client:
-				func_send_to_client(pack.to, msg);
-				break;
 			case client_to_waiter:
-				func_send_to_waiter(pack.to, msg);
+			{
+				vector<string> v_to;
+				v_to.push_back("001@10957");
+				v_to.push_back("002@10957");
+				dispatch_package dis_pack;
+				dis_pack.to = v_to;
+				dis_pack.msg = pack;
+				string dis_msg;
+				set_message_from_dispatch_package(dis_pack, dis_msg);
+				func_send_to_dispatcher("", dis_msg);
+			}
 				break;
 			case client_disconnect:
 				func_disconnect_client(pack.to);
 				break;
 			case waiter_connect:
 			case client_connect:
+			{
 				int conn_addr = (int) hdl.lock().get();
 				this->update_connection(conn_addr, pack.from, pack.site_id);
+				//update account_id, conn_addr, machine_id into redis as key, hkey, hval
+			}
 				break;
 			}
 		}

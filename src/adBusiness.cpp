@@ -54,6 +54,7 @@ int main() {
 //	test_client();
 //	adbiz::utility::InitLogger(true);
 //	LOG_INFO("First log test");
+	adbiz::cache::cache_manager::set_cache_type(mem_redis);
 	reset_socket_connection_in_db();
 //	LOG_INFO("socket connections were cleared.");
 
