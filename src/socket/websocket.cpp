@@ -135,10 +135,10 @@ void adbiz::websocket::wspp_server_dispatcher::on_message(connection_hdl& hdl, s
 			func_send_to_waiter(*iter, msg->get_payload());
 			break;
 		case dispatcher_connect:
-		{
-			int conn_addr = (int) hdl.lock().get();
-			p_mp->update_connection(conn_addr, dis_pack.msg.from, 0);
-		}
+			{
+				int conn_addr = (int) hdl.lock().get();
+				p_mp->update_connection(conn_addr, dis_pack.msg.from, 0);
+			}
 			break;
 		default:
 			break;

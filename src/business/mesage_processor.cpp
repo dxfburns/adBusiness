@@ -186,28 +186,28 @@ namespace adbiz {
 			switch (type) {
 			case waiter_to_client:
 			case client_to_waiter:
-			{
-				vector<string> v_to;
-				v_to.push_back("001@10957");
-				v_to.push_back("002@10957");
-				dispatch_package dis_pack;
-				dis_pack.to = v_to;
-				dis_pack.msg = pack;
-				string dis_msg;
-				set_message_from_dispatch_package(dis_pack, dis_msg);
-				func_send_to_dispatcher("", dis_msg);
-			}
+				{
+					vector<string> v_to;
+					v_to.push_back("001@10957");
+					v_to.push_back("002@10957");
+					dispatch_package dis_pack;
+					dis_pack.to = v_to;
+					dis_pack.msg = pack;
+					string dis_msg;
+					set_message_from_dispatch_package(dis_pack, dis_msg);
+					func_send_to_dispatcher("", dis_msg);
+				}
 				break;
 			case client_disconnect:
 				func_disconnect_client(pack.to);
 				break;
 			case waiter_connect:
 			case client_connect:
-			{
-				int conn_addr = (int) hdl.lock().get();
-				this->update_connection(conn_addr, pack.from, pack.site_id);
-				//update account_id, conn_addr, machine_id into redis as key, hkey, hval
-			}
+				{
+					int conn_addr = (int) hdl.lock().get();
+					this->update_connection(conn_addr, pack.from, pack.site_id);
+					//update account_id, conn_addr, machine_id into redis as key, hkey, hval
+				}
 				break;
 			}
 		}
