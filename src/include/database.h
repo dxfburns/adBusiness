@@ -9,6 +9,7 @@
 #define DATABASE_H_
 
 #include <set>
+#include <vector>
 #include <mysql_connection.h>
 #include <mysql_driver.h>
 #include <prepared_statement.h>
@@ -62,6 +63,7 @@ namespace adbiz {
 			bool remove_connection_by_clientid(const string&);
 			conn_m get_connection_manager(const int);
 			set<conn_m> get_connection_managers(const string&);
+			vector<string> get_client_by_machine(const int);
 		};
 }}}
 #endif /* DATABASE_H_ */

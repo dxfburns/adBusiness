@@ -106,3 +106,14 @@ vector<connection_hdl> adbiz::business::connection_manager::get_connections(cons
 
 	return v_conn;
 }
+
+void adbiz::business::connection_manager::remove_connections_by_machine(const int machine_id) {
+	db_connection_manager dbcm;
+	vector<string> v = dbcm.get_client_by_machine(machine_id);
+	for(vector<string>::iterator iter = v.begin(); iter != v.end(); iter++) {
+		const string client_id(*iter);
+		cache_manager::remove_conn_mngt(client_id);
+	}
+
+	dbcm.remove_connection_by_machineid(machine_id);
+}

@@ -59,6 +59,7 @@ namespace adbiz {
 			void remove_connection(const connection_hdl&);
 			void remove_connection(const string&);
 			vector<connection_hdl> get_connections(const string&);
+			void remove_connections_by_machine(const int);
 		};
 	}
 }

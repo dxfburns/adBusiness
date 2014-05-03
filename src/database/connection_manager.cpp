@@ -98,3 +98,17 @@ set<conn_m> adbiz::db::manage::db_connection_manager::get_connection_managers(co
 	return s_conn;
 }
 
+vector<string> adbiz::db::manage::db_connection_manager::get_client_by_machine(const int machine_id) {
+	mysql_handler handler;
+	boost::format fmt("select client_id from connection_manager where machine_id = '%1%'");
+	fmt % machine_id;
+	auto_ptr<ResultSet> res(handler.get_ResultSet(fmt.str().data()));
+
+	vector<string> clients;
+	while (res->next()) {
+		clients.push_back(res->getString("client_id"));
+	}
+
+	return clients;
+}
+

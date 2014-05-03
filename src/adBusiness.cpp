@@ -10,7 +10,7 @@
 #include <boost/asio.hpp>
 #include "include/log.h"
 #include "include/model.h"
-#include "include/database.h"
+#include "include/connection_manager.h"
 #include "include/socket.h"
 #include "include/websocket.h"
 #include "include/cache.h"
@@ -19,13 +19,13 @@
 using namespace std;
 using namespace boost::asio;
 using namespace adbiz::model;
-using namespace adbiz::db::manage;
+using namespace adbiz::business;
 using namespace adbiz::socket;
 using namespace adbiz::websocket;
 using namespace adbiz::business::auto_assign;
 
 void reset_socket_connection_in_db() {
-	adbiz::db::manage::db_connection_manager::db_connection_manager().remove_connection_by_machineid(MACHINE_ID);
+	connection_manager::get_client_instance()->remove_connections_by_machine(MACHINE_ID);
 }
 
 void test_reflection();
